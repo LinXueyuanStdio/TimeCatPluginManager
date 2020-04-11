@@ -33,7 +33,7 @@ public class SamplePluginManager extends FastPluginManager {
      */
     @Override
     protected String getName() {
-        return "sample-manager";
+        return "图床";
     }
 
     /**
@@ -55,9 +55,6 @@ public class SamplePluginManager extends FastPluginManager {
     @Override
     public void enter(final Context context, long fromId, Bundle bundle, final EnterCallback callback) {
         if (fromId == Constant.FROM_ID_START_ACTIVITY) {
-            bundle.putString(Constant.KEY_PLUGIN_ZIP_PATH, "/data/local/tmp/plugin-debug.zip");
-            bundle.putString(Constant.KEY_PLUGIN_PART_KEY, "sample-plugin");
-            bundle.putString(Constant.KEY_ACTIVITY_CLASSNAME, "com.tencent.shadow.sample.plugin.MainActivity");
             onStartActivity(context, bundle, callback);
         } else if (fromId == Constant.FROM_ID_CALL_SERVICE) {
             callPluginService(context);
