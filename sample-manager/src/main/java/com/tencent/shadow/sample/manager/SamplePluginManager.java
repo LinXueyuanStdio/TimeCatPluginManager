@@ -171,19 +171,21 @@ public class SamplePluginManager extends FastPluginManager {
     }
 
     private void onLoadPicture(final Context context, Bundle bundle, final EnterCallback callback) {
+        final String pluginZipPath = bundle.getString(PluginManagerAggreement.KEY_PLUGIN_ZIP_PATH);
+        final String partKey = bundle.getString(PluginManagerAggreement.KEY_PLUGIN_PART_KEY);
         List<InstalledPlugin> installedPlugins = getInstalledPlugins(5);
         Log.e(getName(), installedPlugins.toString());
+        if (installedPlugins.isEmpty()) {
+            Log.e(getName(), "没有安装任何插件");
+            return;
+        }
+        if (callback != null) {
+            final View view = LayoutInflater.from(mCurrentContext).inflate(R.layout.activity_load_plugin, null);
+            callback.onShowLoadingView(view);
+        }
         try {
-            if (callback != null) {
-                final View view = LayoutInflater.from(mCurrentContext).inflate(R.layout.activity_load_plugin, null);
-                callback.onShowLoadingView(view);
-            }
             for (InstalledPlugin installedPlugin : installedPlugins) {
                 loadPlugin(installedPlugin.UUID, "upload");
-            }
-            if (callback != null) {
-                callback.onCloseLoadingView();
-                callback.onEnterComplete();
             }
         } catch (RemoteException e) {
             e.printStackTrace();
@@ -191,6 +193,11 @@ public class SamplePluginManager extends FastPluginManager {
             e.printStackTrace();
         } catch (FailedException e) {
             e.printStackTrace();
+        } finally {
+            if (callback != null) {
+                callback.onCloseLoadingView();
+                callback.onEnterComplete();
+            }
         }
         final ArrayList<String> picturePaths = bundle.getStringArrayList(PluginManagerAggreement.KEY_PICTURE_PATH);
         if (picturePaths == null) return;
