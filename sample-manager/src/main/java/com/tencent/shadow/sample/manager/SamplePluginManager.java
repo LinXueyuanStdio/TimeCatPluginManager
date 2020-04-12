@@ -4,17 +4,26 @@ import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.os.*;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Looper;
+import android.os.RemoteException;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+
 import com.tencent.shadow.core.manager.installplugin.InstalledPlugin;
 import com.tencent.shadow.dynamic.host.EnterCallback;
+import com.tencent.shadow.dynamic.host.FailedException;
 import com.tencent.shadow.dynamic.loader.PluginServiceConnection;
 import com.tencent.shadow.sample.plugin.IMyAidlInterface;
+import com.timecat.component.readonly.PluginManagerAggreement;
 
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeoutException;
 
 
 public class SamplePluginManager extends FastPluginManager {
@@ -33,7 +42,7 @@ public class SamplePluginManager extends FastPluginManager {
      */
     @Override
     protected String getName() {
-        return "图床";
+        return "PictureBed";
     }
 
     /**
@@ -49,28 +58,30 @@ public class SamplePluginManager extends FastPluginManager {
      */
     @Override
     protected String getPluginProcessServiceName() {
-        return "com.tencent.shadow.sample.introduce_shadow_lib.MainPluginProcessService";
+        return "com.timecat.module.plugin.MainPluginProcessService";
     }
 
     @Override
     public void enter(final Context context, long fromId, Bundle bundle, final EnterCallback callback) {
-        if (fromId == Constant.FROM_ID_START_ACTIVITY) {
+        if (fromId == PluginManagerAggreement.FROM_ID_START_ACTIVITY) {
             onStartActivity(context, bundle, callback);
-        } else if (fromId == Constant.FROM_ID_CALL_SERVICE) {
-            callPluginService(context);
+        } else if (fromId == PluginManagerAggreement.FROM_ID_CALL_SERVICE) {
+            callPluginService(context, bundle);
+        } else if (fromId == PluginManagerAggreement.FROM_ID_LOAD_PICTURE) {
+            onLoadPicture(context, bundle, callback);
         } else {
             throw new IllegalArgumentException("不认识的fromId==" + fromId);
         }
     }
 
     private void onStartActivity(final Context context, Bundle bundle, final EnterCallback callback) {
-        final String pluginZipPath = bundle.getString(Constant.KEY_PLUGIN_ZIP_PATH);
-        final String partKey = bundle.getString(Constant.KEY_PLUGIN_PART_KEY);
-        final String className = bundle.getString(Constant.KEY_ACTIVITY_CLASSNAME);
+        final String pluginZipPath = bundle.getString(PluginManagerAggreement.KEY_PLUGIN_ZIP_PATH);
+        final String partKey = bundle.getString(PluginManagerAggreement.KEY_PLUGIN_PART_KEY);
+        final String className = bundle.getString(PluginManagerAggreement.KEY_ACTIVITY_CLASSNAME);
         if (className == null) {
             throw new NullPointerException("className == null");
         }
-        final Bundle extras = bundle.getBundle(Constant.KEY_EXTRAS);
+        final Bundle extras = bundle.getBundle(PluginManagerAggreement.KEY_EXTRAS);
 
         if (callback != null) {
             final View view = LayoutInflater.from(mCurrentContext).inflate(R.layout.activity_load_plugin, null);
@@ -110,10 +121,10 @@ public class SamplePluginManager extends FastPluginManager {
         });
     }
 
-    private void callPluginService(final Context context) {
-        final String pluginZipPath = "/data/local/tmp/plugin-debug.zip";
-        final String partKey = "sample-plugin";
-        final String className = "com.tencent.shadow.sample.plugin.MyService";
+    private void callPluginService(final Context context, Bundle bundle) {
+        final String pluginZipPath = bundle.getString(PluginManagerAggreement.KEY_PLUGIN_ZIP_PATH);
+        final String partKey = bundle.getString(PluginManagerAggreement.KEY_PLUGIN_PART_KEY);
+        final String className = bundle.getString(PluginManagerAggreement.KEY_ACTIVITY_CLASSNAME);
 
         Intent pluginIntent = new Intent();
         pluginIntent.setClassName(context.getPackageName(), className);
@@ -156,5 +167,31 @@ public class SamplePluginManager extends FastPluginManager {
                 }
             }
         });
+    }
+
+    private void onLoadPicture(final Context context, Bundle bundle, final EnterCallback callback) {
+        final String picturePath = bundle.getString(PluginManagerAggreement.KEY_PICTURE_PATH);
+        List<InstalledPlugin> installedPlugins = getInstalledPlugins(5);
+        Log.e(getName(), picturePath);
+        Log.e(getName(), installedPlugins.toString());
+        try {
+            if (callback != null) {
+                final View view = LayoutInflater.from(mCurrentContext).inflate(R.layout.activity_load_plugin, null);
+                callback.onShowLoadingView(view);
+            }
+            for (InstalledPlugin installedPlugin : installedPlugins) {
+                loadPlugin(installedPlugin.UUID, "upload");
+            }
+            if (callback != null) {
+                callback.onCloseLoadingView();
+                callback.onEnterComplete();
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        } catch (TimeoutException e) {
+            e.printStackTrace();
+        } catch (FailedException e) {
+            e.printStackTrace();
+        }
     }
 }
