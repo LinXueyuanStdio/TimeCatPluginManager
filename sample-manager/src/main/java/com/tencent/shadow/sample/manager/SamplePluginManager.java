@@ -20,6 +20,7 @@ import com.tencent.shadow.dynamic.loader.PluginServiceConnection;
 import com.tencent.shadow.sample.plugin.IMyAidlInterface;
 import com.timecat.component.readonly.PluginManagerAggreement;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -170,9 +171,7 @@ public class SamplePluginManager extends FastPluginManager {
     }
 
     private void onLoadPicture(final Context context, Bundle bundle, final EnterCallback callback) {
-        final String picturePath = bundle.getString(PluginManagerAggreement.KEY_PICTURE_PATH);
         List<InstalledPlugin> installedPlugins = getInstalledPlugins(5);
-        Log.e(getName(), picturePath);
         Log.e(getName(), installedPlugins.toString());
         try {
             if (callback != null) {
@@ -193,5 +192,8 @@ public class SamplePluginManager extends FastPluginManager {
         } catch (FailedException e) {
             e.printStackTrace();
         }
+        final ArrayList<String> picturePaths = bundle.getStringArrayList(PluginManagerAggreement.KEY_PICTURE_PATH);
+        if (picturePaths == null) return;
+        Log.e(getName(), picturePaths.toString());
     }
 }
