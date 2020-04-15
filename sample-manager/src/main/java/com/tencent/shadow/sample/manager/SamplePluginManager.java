@@ -4,6 +4,7 @@ import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -79,10 +80,11 @@ public class SamplePluginManager extends FastPluginManager {
         final String pluginZipPath = bundle.getString(PluginManagerAggreement.KEY_PLUGIN_ZIP_PATH);
         final String partKey = bundle.getString(PluginManagerAggreement.KEY_PLUGIN_PART_KEY);
         final String className = bundle.getString(PluginManagerAggreement.KEY_ACTIVITY_CLASSNAME);
+        final Bundle extras = bundle.getBundle(PluginManagerAggreement.KEY_EXTRAS);
+
         if (className == null) {
             throw new NullPointerException("className == null");
         }
-        final Bundle extras = bundle.getBundle(PluginManagerAggreement.KEY_EXTRAS);
 
         if (callback != null) {
             final View view = LayoutInflater.from(mCurrentContext).inflate(R.layout.activity_load_plugin, null);
@@ -96,10 +98,7 @@ public class SamplePluginManager extends FastPluginManager {
                     InstalledPlugin installedPlugin
                             = installPlugin(pluginZipPath, null, true);//这个调用是阻塞的
                     Intent pluginIntent = new Intent();
-                    pluginIntent.setClassName(
-                            context.getPackageName(),
-                            className
-                    );
+                    pluginIntent.setClassName(context.getPackageName(), className);
                     if (extras != null) {
                         pluginIntent.replaceExtras(extras);
                     }
@@ -126,9 +125,13 @@ public class SamplePluginManager extends FastPluginManager {
         final String pluginZipPath = bundle.getString(PluginManagerAggreement.KEY_PLUGIN_ZIP_PATH);
         final String partKey = bundle.getString(PluginManagerAggreement.KEY_PLUGIN_PART_KEY);
         final String className = bundle.getString(PluginManagerAggreement.KEY_ACTIVITY_CLASSNAME);
+        final Bundle extras = bundle.getBundle(PluginManagerAggreement.KEY_EXTRAS);
+        final String action = bundle.getString(PluginManagerAggreement.KEY_ACTION);
+        final Uri data = bundle.getParcelable(PluginManagerAggreement.KEY_DATA);
 
-        Intent pluginIntent = new Intent();
-        pluginIntent.setClassName(context.getPackageName(), className);
+        if (className == null) {
+            throw new NullPointerException("className == null");
+        }
 
         executorService.execute(new Runnable() {
             @Override
@@ -141,6 +144,15 @@ public class SamplePluginManager extends FastPluginManager {
 
                     Intent pluginIntent = new Intent();
                     pluginIntent.setClassName(context.getPackageName(), className);
+                    if (extras != null) {
+                        pluginIntent.replaceExtras(extras);
+                    }
+                    if (action != null) {
+                        pluginIntent.setAction(action);
+                    }
+                    if (data != null) {
+                        pluginIntent.setData(data);
+                    }
 
                     boolean callSuccess = mPluginLoader.bindPluginService(pluginIntent, new PluginServiceConnection() {
                         @Override
