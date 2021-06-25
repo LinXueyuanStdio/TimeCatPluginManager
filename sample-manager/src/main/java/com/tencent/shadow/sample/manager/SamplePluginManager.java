@@ -19,7 +19,7 @@ import com.tencent.shadow.dynamic.host.EnterCallback;
 import com.tencent.shadow.dynamic.host.FailedException;
 import com.tencent.shadow.dynamic.loader.PluginServiceConnection;
 import com.tencent.shadow.sample.plugin.IMyAidlInterface;
-import com.timecat.component.readonly.PluginManagerAggreement;
+import com.timecat.identity.readonly.PluginManagerAgreement;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,11 +65,11 @@ public class SamplePluginManager extends FastPluginManager {
 
     @Override
     public void enter(final Context context, long fromId, Bundle bundle, final EnterCallback callback) {
-        if (fromId == PluginManagerAggreement.FROM_ID_START_ACTIVITY) {
+        if (fromId == PluginManagerAgreement.FROM_ID_START_ACTIVITY) {
             onStartActivity(context, bundle, callback);
-        } else if (fromId == PluginManagerAggreement.FROM_ID_CALL_SERVICE) {
+        } else if (fromId == PluginManagerAgreement.FROM_ID_CALL_SERVICE) {
             callPluginService(context, bundle);
-        } else if (fromId == PluginManagerAggreement.FROM_ID_LOAD_PICTURE) {
+        } else if (fromId == PluginManagerAgreement.FROM_ID_LOAD_PICTURE) {
             onLoadPicture(context, bundle, callback);
         } else {
             throw new IllegalArgumentException("不认识的fromId==" + fromId);
@@ -77,10 +77,10 @@ public class SamplePluginManager extends FastPluginManager {
     }
 
     private void onStartActivity(final Context context, Bundle bundle, final EnterCallback callback) {
-        final String pluginZipPath = bundle.getString(PluginManagerAggreement.KEY_PLUGIN_ZIP_PATH);
-        final String partKey = bundle.getString(PluginManagerAggreement.KEY_PLUGIN_PART_KEY);
-        final String className = bundle.getString(PluginManagerAggreement.KEY_ACTIVITY_CLASSNAME);
-        final Bundle extras = bundle.getBundle(PluginManagerAggreement.KEY_EXTRAS);
+        final String pluginZipPath = bundle.getString(PluginManagerAgreement.KEY_PLUGIN_ZIP_PATH);
+        final String partKey = bundle.getString(PluginManagerAgreement.KEY_PLUGIN_PART_KEY);
+        final String className = bundle.getString(PluginManagerAgreement.KEY_ACTIVITY_CLASSNAME);
+        final Bundle extras = bundle.getBundle(PluginManagerAgreement.KEY_EXTRAS);
 
         if (className == null) {
             throw new NullPointerException("className == null");
@@ -122,12 +122,12 @@ public class SamplePluginManager extends FastPluginManager {
     }
 
     private void callPluginService(final Context context, Bundle bundle) {
-        final String pluginZipPath = bundle.getString(PluginManagerAggreement.KEY_PLUGIN_ZIP_PATH);
-        final String partKey = bundle.getString(PluginManagerAggreement.KEY_PLUGIN_PART_KEY);
-        final String className = bundle.getString(PluginManagerAggreement.KEY_ACTIVITY_CLASSNAME);
-        final Bundle extras = bundle.getBundle(PluginManagerAggreement.KEY_EXTRAS);
-        final String action = bundle.getString(PluginManagerAggreement.KEY_ACTION);
-        final Uri data = bundle.getParcelable(PluginManagerAggreement.KEY_DATA);
+        final String pluginZipPath = bundle.getString(PluginManagerAgreement.KEY_PLUGIN_ZIP_PATH);
+        final String partKey = bundle.getString(PluginManagerAgreement.KEY_PLUGIN_PART_KEY);
+        final String className = bundle.getString(PluginManagerAgreement.KEY_ACTIVITY_CLASSNAME);
+        final Bundle extras = bundle.getBundle(PluginManagerAgreement.KEY_EXTRAS);
+        final String action = bundle.getString(PluginManagerAgreement.KEY_ACTION);
+        final Uri data = bundle.getParcelable(PluginManagerAgreement.KEY_DATA);
 
         if (className == null) {
             throw new NullPointerException("className == null");
@@ -183,8 +183,8 @@ public class SamplePluginManager extends FastPluginManager {
     }
 
     private void onLoadPicture(final Context context, Bundle bundle, final EnterCallback callback) {
-        final String pluginZipPath = bundle.getString(PluginManagerAggreement.KEY_PLUGIN_ZIP_PATH);
-        final String partKey = bundle.getString(PluginManagerAggreement.KEY_PLUGIN_PART_KEY);
+        final String pluginZipPath = bundle.getString(PluginManagerAgreement.KEY_PLUGIN_ZIP_PATH);
+        final String partKey = bundle.getString(PluginManagerAgreement.KEY_PLUGIN_PART_KEY);
         List<InstalledPlugin> installedPlugins = getInstalledPlugins(5);
         Log.e(getName(), installedPlugins.toString());
         if (installedPlugins.isEmpty()) {
@@ -211,7 +211,7 @@ public class SamplePluginManager extends FastPluginManager {
                 callback.onEnterComplete();
             }
         }
-        final ArrayList<String> picturePaths = bundle.getStringArrayList(PluginManagerAggreement.KEY_PICTURE_PATH);
+        final ArrayList<String> picturePaths = bundle.getStringArrayList(PluginManagerAgreement.KEY_PICTURE_PATH);
         if (picturePaths == null) return;
         Log.e(getName(), picturePaths.toString());
     }

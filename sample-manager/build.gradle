@@ -29,9 +29,11 @@ android {
 }
 
 dependencies {
-    implementation "com.timecat.component:CommonStatic:1.1.9"
+    compileOnly rootProject.ext.timecat["component-CommonStatic"]
 
     implementation "com.tencent.shadow.dynamic:manager:$shadow_version"
     compileOnly "com.tencent.shadow.core:common:$shadow_version"
     compileOnly "com.tencent.shadow.dynamic:host:$shadow_version"
 }
+
+apply from: "${project.rootDir}/gradle/library_tail.gradle"
