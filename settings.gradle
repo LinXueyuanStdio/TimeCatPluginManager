@@ -1,4 +1,4 @@
-include ':sample-manager'
+include ':reader-manager'
 
 rootProject.name = "TimeCatPluginManager"
 
