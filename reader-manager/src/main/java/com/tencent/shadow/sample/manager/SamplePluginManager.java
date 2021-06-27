@@ -16,17 +16,12 @@ import android.view.View;
 
 import com.tencent.shadow.core.manager.installplugin.InstalledPlugin;
 import com.tencent.shadow.dynamic.host.EnterCallback;
-import com.tencent.shadow.dynamic.host.FailedException;
 import com.tencent.shadow.dynamic.loader.PluginServiceConnection;
 import com.tencent.shadow.sample.plugin.IMyAidlInterface;
-import com.timecat.identity.readonly.PluginManagerAgreement;
+import com.timecat.identity.readonly.PluginHub;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeoutException;
-
 
 public class SamplePluginManager extends FastPluginManager {
 
@@ -59,28 +54,26 @@ public class SamplePluginManager extends FastPluginManager {
      * @return 宿主中注册的PluginProcessService实现的类名
      */
     @Override
-    protected String getPluginProcessServiceName() {
+    protected String getPluginProcessServiceName(String partKey) {
         return "com.timecat.module.plugin.MainPluginProcessService";
     }
 
     @Override
     public void enter(final Context context, long fromId, Bundle bundle, final EnterCallback callback) {
-        if (fromId == PluginManagerAgreement.FROM_ID_START_ACTIVITY) {
+        if (fromId == PluginHub.FROM_ID_START_ACTIVITY) {
             onStartActivity(context, bundle, callback);
-        } else if (fromId == PluginManagerAgreement.FROM_ID_CALL_SERVICE) {
+        } else if (fromId == PluginHub.FROM_ID_CALL_SERVICE) {
             callPluginService(context, bundle);
-        } else if (fromId == PluginManagerAgreement.FROM_ID_LOAD_PICTURE) {
-            onLoadPicture(context, bundle, callback);
         } else {
             throw new IllegalArgumentException("不认识的fromId==" + fromId);
         }
     }
 
     private void onStartActivity(final Context context, Bundle bundle, final EnterCallback callback) {
-        final String pluginZipPath = bundle.getString(PluginManagerAgreement.KEY_PLUGIN_ZIP_PATH);
-        final String partKey = bundle.getString(PluginManagerAgreement.KEY_PLUGIN_PART_KEY);
-        final String className = bundle.getString(PluginManagerAgreement.KEY_ACTIVITY_CLASSNAME);
-        final Bundle extras = bundle.getBundle(PluginManagerAgreement.KEY_EXTRAS);
+        final String pluginZipPath = bundle.getString(PluginHub.KEY_PLUGIN_ZIP_PATH);
+        final String partKey = bundle.getString(PluginHub.KEY_PLUGIN_PART_KEY);
+        final String className = bundle.getString(PluginHub.KEY_CLASSNAME);
+        final Bundle extras = bundle.getBundle(PluginHub.KEY_EXTRAS);
 
         if (className == null) {
             throw new NullPointerException("className == null");
@@ -103,7 +96,7 @@ public class SamplePluginManager extends FastPluginManager {
                         pluginIntent.replaceExtras(extras);
                     }
 
-                    startPluginActivity(context, installedPlugin, partKey, pluginIntent);
+                    startPluginActivity(installedPlugin, partKey, pluginIntent);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -122,12 +115,12 @@ public class SamplePluginManager extends FastPluginManager {
     }
 
     private void callPluginService(final Context context, Bundle bundle) {
-        final String pluginZipPath = bundle.getString(PluginManagerAgreement.KEY_PLUGIN_ZIP_PATH);
-        final String partKey = bundle.getString(PluginManagerAgreement.KEY_PLUGIN_PART_KEY);
-        final String className = bundle.getString(PluginManagerAgreement.KEY_ACTIVITY_CLASSNAME);
-        final Bundle extras = bundle.getBundle(PluginManagerAgreement.KEY_EXTRAS);
-        final String action = bundle.getString(PluginManagerAgreement.KEY_ACTION);
-        final Uri data = bundle.getParcelable(PluginManagerAgreement.KEY_DATA);
+        final String pluginZipPath = bundle.getString(PluginHub.KEY_PLUGIN_ZIP_PATH);
+        final String partKey = bundle.getString(PluginHub.KEY_PLUGIN_PART_KEY);
+        final String className = bundle.getString(PluginHub.KEY_CLASSNAME);
+        final Bundle extras = bundle.getBundle(PluginHub.KEY_EXTRAS);
+        final String action = bundle.getString(PluginHub.KEY_ACTION);
+        final Uri data = bundle.getParcelable(PluginHub.KEY_DATA);
 
         if (className == null) {
             throw new NullPointerException("className == null");
@@ -137,11 +130,8 @@ public class SamplePluginManager extends FastPluginManager {
             @Override
             public void run() {
                 try {
-                    InstalledPlugin installedPlugin
-                            = installPlugin(pluginZipPath, null, true);//这个调用是阻塞的
-
-                    loadPlugin(installedPlugin.UUID, partKey);
-
+                    InstalledPlugin installedPlugin = installPlugin(pluginZipPath, null, true);//这个调用是阻塞的
+                    loadPluginWithApplicationCreated(installedPlugin.UUID, partKey);
                     Intent pluginIntent = new Intent();
                     pluginIntent.setClassName(context.getPackageName(), className);
                     if (extras != null) {
@@ -180,39 +170,5 @@ public class SamplePluginManager extends FastPluginManager {
                 }
             }
         });
-    }
-
-    private void onLoadPicture(final Context context, Bundle bundle, final EnterCallback callback) {
-        final String pluginZipPath = bundle.getString(PluginManagerAgreement.KEY_PLUGIN_ZIP_PATH);
-        final String partKey = bundle.getString(PluginManagerAgreement.KEY_PLUGIN_PART_KEY);
-        List<InstalledPlugin> installedPlugins = getInstalledPlugins(5);
-        Log.e(getName(), installedPlugins.toString());
-        if (installedPlugins.isEmpty()) {
-            Log.e(getName(), "没有安装任何插件");
-            return;
-        }
-        if (callback != null) {
-            final View view = LayoutInflater.from(mCurrentContext).inflate(R.layout.activity_load_plugin, null);
-            callback.onShowLoadingView(view);
-        }
-        try {
-            for (InstalledPlugin installedPlugin : installedPlugins) {
-                loadPlugin(installedPlugin.UUID, "upload");
-            }
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        } catch (TimeoutException e) {
-            e.printStackTrace();
-        } catch (FailedException e) {
-            e.printStackTrace();
-        } finally {
-            if (callback != null) {
-                callback.onCloseLoadingView();
-                callback.onEnterComplete();
-            }
-        }
-        final ArrayList<String> picturePaths = bundle.getStringArrayList(PluginManagerAgreement.KEY_PICTURE_PATH);
-        if (picturePaths == null) return;
-        Log.e(getName(), picturePaths.toString());
     }
 }
