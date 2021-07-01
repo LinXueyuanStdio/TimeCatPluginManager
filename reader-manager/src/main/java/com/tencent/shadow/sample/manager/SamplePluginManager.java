@@ -55,7 +55,7 @@ public class SamplePluginManager extends FastPluginManager {
      */
     @Override
     protected String getPluginProcessServiceName(String partKey) {
-        return "com.timecat.module.plugin.MainPluginProcessService";
+        return "com.timecat.module.plugin.container.MainPluginProcessService";
     }
 
     @Override
@@ -88,8 +88,7 @@ public class SamplePluginManager extends FastPluginManager {
             @Override
             public void run() {
                 try {
-                    InstalledPlugin installedPlugin
-                            = installPlugin(pluginZipPath, null, true);//这个调用是阻塞的
+                    InstalledPlugin installedPlugin = installPlugin(pluginZipPath, null, true);//这个调用是阻塞的
                     Intent pluginIntent = new Intent();
                     pluginIntent.setClassName(context.getPackageName(), className);
                     if (extras != null) {
