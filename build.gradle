@@ -1,55 +1,41 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
-
 buildscript {
+    apply from: "${gradle.ext.localGradleDir}/settings/deps.gradle"
 
-    def moduleConfigProps = new Properties()
-    File moduleConfig = rootProject.file("moduleConfig.properties")
-    if (moduleConfig.exists()) {
-        moduleConfigProps.load(new FileInputStream(moduleConfig))
-    }
-    def localMavenDir = file(moduleConfigProps.localMavenPath)
-
-    ext.kotlin_version = '1.4.31'
-
-    ext.shadow_version = '2.0.15'
     repositories {
-        maven { url "file://${localMavenDir.absolutePath}" }
-        maven { url "https://jitpack.io" }
-        maven { url "https://plugins.gradle.org/m2/" }
+        maven { url "file://${gradle.ext.localMavenDir.absolutePath}" }
         google()
-        jcenter()
+        mavenCentral()
+        maven { url "https://jitpack.io" }
+
+        maven { url "https://plugins.gradle.org/m2/" }
+        maven { url "https://repo1.maven.org/maven2/" }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.1.2'
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
+        classpath 'com.android.tools.build:gradle:7.0.0'
+        classpath classpath.kotlin
+        classpath classpath.component_router
+        classpath classpath.bugly
+        classpath classpath.analysis
+        classpath classpath.upload
     }
 }
-
-def moduleConfigProps = new Properties()
-File moduleConfig = rootProject.file("moduleConfig.properties")
-if (moduleConfig.exists()) {
-    moduleConfigProps.load(new FileInputStream(moduleConfig))
-}
-def localMavenDir = file(moduleConfigProps.localMavenPath)
-def localGradleDir = file(moduleConfigProps.localGradlePath)
 
 allprojects {
 
     repositories {
-        maven { url "file://${localMavenDir.absolutePath}" }
+        maven { url "file://${gradle.ext.localMavenDir.absolutePath}" }
 
         google()
-        jcenter()
-        mavenLocal()
+        mavenCentral()
         maven { url "https://jitpack.io" }
 
         maven { url "https://plugins.gradle.org/m2/" }
+        maven { url "https://repo1.maven.org/maven2/" }
+
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots" } // for org-java
     }
 }
 
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
-
-apply from: "${localGradleDir}/deps.gradle"

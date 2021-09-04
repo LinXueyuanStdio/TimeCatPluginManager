@@ -1,30 +1,8 @@
-apply plugin: 'com.android.application'
+apply from: "${gradle.ext.localGradleDir}/project/plugin_manager_header.gradle"
 
 android {
-    compileSdkVersion 29
     defaultConfig {
         applicationId "com.tencent.shadow.sample.manager"
-        minSdkVersion 21
-        targetSdkVersion 28
-        versionCode 1
-        versionName "1.0"
-    }
-    buildTypes {
-        debug {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-
-        release {
-            minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-
-            signingConfig signingConfigs.create("release")
-            signingConfig.initWith(buildTypes.debug.signingConfig)
-        }
-    }
-    lintOptions {
-        abortOnError false
     }
 }
 
@@ -36,4 +14,4 @@ dependencies {
     compileOnly "com.tencent.shadow.dynamic:host:$shadow_version"
 }
 
-apply from: "${project.rootDir}/gradle/library_tail.gradle"
+//apply from: "${project.rootDir}/gradle/library_tail.gradle"
